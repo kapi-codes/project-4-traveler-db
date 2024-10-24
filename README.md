@@ -43,7 +43,7 @@ Copy over your entire `server/` directory form project 3. This should include th
 
 ### New Files and Dependencies
 
-For this project, you will be adding a few files:
+For this project, you will add a few files (provided in the repository):
 
 * `config` 
     * `database.js`
@@ -85,28 +85,27 @@ Once your Railway postgreSQL instance is ready, open up the dashboard. Under `da
 This should pop up a modal. Select `Public Network`, and copy and paste the `Connection URL`.
 ![connect](instructions-imgs/connect-2.png) 
 
-This is the address you'll point your web app to. Set up an environment variable in your `.env` file with the `Connection URL` as the value.
+This is the address you'll point your web app to. Set up a `CONNECTION_STRING` environment variable in your `.env` file with the Connection URL as the value.
 
 ### Connect to the DB
 Take a look at `database.js` in `config/`. There's some initial code there. 
 
-Fill it out to use the environment variable you defined in the step above to set up the connection settings to the DB. Do NOT hardcode your DB connection string into your app. That value should stay in your `.env` file. This makes it easy to update config values, and also keep your DB credentials safe.
+Fill it out to use the `CONNECTION_STRING` environment variable you defined in the step above to set up the connection settings to the DB. Do NOT hardcode your DB connection string into your app. That value should stay in your `.env` file. This makes it easy to update config values, and also keep your DB credentials safe.
 
 Now, you should be able to import the `pool` object from `database.js` when you want to establish a conenction to the database.
 
 ## Section 3: Setting Up the Seed Script
 
-The goal of this section is to write a script that sets up our database schema
-and populate it with some initial data. 
+The goal of this section is to write a script that sets up our database schema and populate it with some initial data. 
 It's the same restaurant data that you've been using for your previous projects.
 
 Take a look at `seed-db.js` in `config/`. Set up a script entry in `package.json` called `seed-db` that runs the `seed-db.js` script. To get credit for this portion, you should be able to run this script with `npm run seed-db`.
 
 There are 3 functions in the script: `dropTables`, `createTables`, and `insertData`. `dropTables` already drops the `restaurants` table.
 
-In `createTables`, use a SQL `CREATE` statement to create a `restaurant` table. A restaurant should have the same fields as it has had up until now -- `name`, `phone`, `address`, and `photo`. It should also have an `id` column that automatically assigns an id to a new entry.
+In `createTables`, use a SQL `CREATE` statement to create a `restaurants` table. A restaurant should have the same fields as it has had up until now -- `name`, `phone`, `address`, and `photo`. It should also have an `id` column that automatically assigns an id to a new entry.
 
-In `insertData`, use SQL `INSERT` statements to add your restaurant data to the `restaurant` table 
+In `insertData`, use SQL `INSERT` statements to add your restaurant data to the `restaurants` table 
 
 Try running the script with `npm run seed-db`. Check that the table is created and the data you inserted is updated on the Railway instance you are connected to. You should be able to see it under the Data tab.
 
@@ -136,9 +135,9 @@ Nice, you now have a web app that persists changes to your restaurant data! Chan
 
 ### A Note on Using Railway
 
-Railway is a free service which means that sometimes commands might run a bit slowly. For example, something I've observed is that deleting a card on the frontend kicks of the delete request to Railway, but if the changes take a few second to propagate, but the fetch request's callback handler might trigger to early and reload the page before record is "properly deleted" from Railway. But, if you refresh 5 seconds later, Railway will have successfully deleted the record, and the card correctly disappears from your frontend as well.
+Railway is a free service, so sometimes commands might run a bit slowly. For example, something I've observed is that deleting a card on the frontend resolves to the response, but the changes can take a few second to actually propagate through the database. The result is that the restaurants page might re-render before record is "properly deleted" from Railway, and the deleted card doesn't disappear. But, if you refresh a couple seconds later, Railway will have successfully deleted the record, and the card correctly disappears from your frontend as well. This might happen with the create command as well.
 
-To avoid getting tripped up on this, I suggest keeping the Railway data tab open in a separate browser tab so that after you interact with your server's frontend, you can go check what's happening on the DB. For example, after you click on the delete button, wait 2-3 seconds to see if the record you clicked the delete button for disappears from Railway. If it does, then things are working as expected -- Railway is just being a bit slow, so don't worry about it.
+To avoid getting tripped up on this, I suggest keeping the Railway data tab open in a separate browser tab so that after you interact with your server's frontend, you can go check that the record is properly deleted from the DB as well. For example, after you click on the delete button, see if the record you deleted disappears from Railway. If it hasn't yet, give it a couple seconds and try refreshing the Railway page to see if it disappeared. Then, go ahead and manually refresh your website to see it reflect the state of the DB. Railway can be a little bit slow, but that isn't something we'll get to address in our class.
 
 ## Section 5: Add Restaurant Reviews
 
@@ -148,11 +147,11 @@ Update `seed-db.js` to create a table called `reviews`. `restaurants` and `revie
 
 A review should have an integer `id`, integer `rating`, and text `content`. Since a review is associated with a restaurant, make sure to include a `restaurant_id` column as well, and bind it to the `restaurant.id` column with a foreign key constraint.
 
-When you update `dropTables()` in the seed script, make sure that you drop the `reviews` table BEFORE the `restaurants` table. Otherwise, postgres will complain since doing that will leave all of the restaurant references in `reviews` to point at nothing.
+When you update `dropTables()` in the seed script, make sure that you drop the `reviews` table BEFORE the `restaurants` table. Otherwise, postgres will complain since deleting restaurants first will leave all of the restaurant_id references in `reviews` to point at records that don't exist.
 
-Edit `insertData` so that it inserts at least 2 reviews for 2 restaurants. Phrased another way, there should be at least 4 reviews in total and at least 2 restaurants should have reviews. You're welcome to add more if you'd prefer.
+Edit `insertData` so that it inserts at least 2 reviews for 2 restaurants. There should be at least 4 reviews in total and at least 2 restaurants should have more than 1 review. You're welcome to add more if you'd like.
 
-Lastly, in `data/restaurants.js`, add a function `getReviewsForRestaurant(id)` that returns a list of reviews associated with a given restaurant id. Make sure this function makes the appropriate SQL query to retrieve this data. You shouldn't need anything fancy -- a `WHERE` clause is sufficient.
+Lastly, in `data/restaurants.js`, add a function `getReviewsForRestaurant(id)` that returns a list of reviews associated with a given restaurant id. Make sure this function makes the appropriate SQL query to retrieve this data. You shouldn't need anything fancy -- a `WHERE` clause is sufficient.  We won't hook this function up for the required portion of this assignment, but if you want to continue, feel free to look at the bonus section below.
 
 Congrats, you've finished the required portion of this project!
 
@@ -161,8 +160,7 @@ Congrats, you've finished the required portion of this project!
 
 This portion is for bonus points. The goal is to close the loop on the reviews and render the restaurant reviews on the restaurant details page. We'll do this by piping the reviews data through to the frontend.
 
-In the restaurant details route (`/resturants/:id`), use `reviewsForRestaurant` to get the reviews for that resturant, and add it to the data passed in for rending the restaurant details EJS template. Update the template to render the review
-ratings and content. 
+In the restaurant details route (`/resturants/:id`), use `reviewsForRestaurant` to get the reviews for that resturant, and add it to the data passed in for rending the restaurant details EJS template. Update the template to render the review ratings and content. 
 
 Feel free to style the reviews on your frontend as you'd like. To get credit for this portion, the review content should be rendered in the template and visible from a web browser.
 
