@@ -75,7 +75,7 @@ The goal of this section is to set up a Postgres DB and connect our web app to i
 
 In this project, we're going to set up a Postgres instance through a web service called Railway. Go to the [Railway website](https://railway.app/) and create an account. After you're done, click on `Start a New Project` and `Deploy PostgreSQL`. This will kick off creating a new Postgres instance on Railway for you. It might take a couple minutes to complete.
 
-    We're using Railway instead of hosting our own Postgres instance. This is so we can minimize how much we worry about "setting up" the DB, we just let Railway take care of that. We just need to connect to it over the internet.
+   We're using Railway instead of hosting our own Postgres instance. This is so we can minimize how much we worry about "setting up" the DB, we just let Railway take care of that. We just need to connect to it over the internet.
 
     If you feel strongly about wanting to try implementing this using a postgres instance on your local machine, come talk to me. The set up will be a little different.
 
